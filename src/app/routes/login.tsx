@@ -16,5 +16,10 @@ export const Route = createFileRoute('/login')({
       throw redirect({ href: search.redirect ?? '/' })
     }
   },
-  component: LoginPage,
+  component: LoginRoute,
 })
+
+function LoginRoute() {
+  const { redirect } = Route.useSearch()
+  return <LoginPage redirectTo={redirect} />
+}

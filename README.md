@@ -40,5 +40,7 @@ Sve rute ispod `_authenticated` traže prijavu (guard u `beforeLoad`).
 
 - Token (Sanctum bearer) je u `localStorage` (`suko_admin_token`); store je u `shared/lib/auth`.
 - axios interceptor dodaje `Authorization: Bearer …` na svaki zahtjev; na 401 briše token i šalje na `/login`.
+- Admin (`GET /admin/me`) se sprema u store nakon logina; nakon refresha ga dohvaća `_authenticated` `beforeLoad`.
+- Odjava je samo na klijentu — API nema `/admin/logout`, pa token na serveru ostaje važeći.
 - shadcn komponente: `pnpm dlx shadcn@latest add <ime>` — `components.json` ih smješta u `src/shared/ui`
   (nakon dodavanja provjeri da `cn` import pokazuje na `@/shared/lib/utils` i dodaj export u `shared/ui/index.ts`).

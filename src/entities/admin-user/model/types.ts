@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import type { AuthAdmin } from '@/shared/lib/auth'
 
 export const loginRequestSchema = z.object({
   email: z.email('Unesi ispravan email.'),
@@ -13,7 +12,10 @@ export const loginResponseSchema = z.object({
 })
 export type LoginResponse = z.infer<typeof loginResponseSchema>
 
-// Puni se tek kad API dobije GET /admin/me.
-export type AdminUser = AuthAdmin & {
-  id: number
-}
+// GET /admin/me — puni auth store nakon logina i nakon refresha stranice.
+export const adminUserSchema = z.object({
+  id: z.number(),
+  email: z.string(),
+  name: z.string(),
+})
+export type AdminUser = z.infer<typeof adminUserSchema>

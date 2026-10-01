@@ -8,6 +8,7 @@ export function useAuth() {
       token: s.token,
       admin: s.admin,
       login: s.login,
+      setAdmin: s.setAdmin,
       logout: s.logout,
     })),
   )
