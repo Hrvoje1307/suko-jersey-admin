@@ -1,0 +1,171 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "react",
+    "typescript",
+    "oxc"
+  ],
+  "ignorePatterns": [
+    "src/app/routeTree.gen.ts"
+  ],
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/only-export-components": [
+      "warn",
+      {
+        "allowConstantExport": true
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "src/shared/**"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@/entities/*",
+                  "@/features/*",
+                  "@/widgets/*",
+                  "@/pages/*",
+                  "@/app/*",
+                  "@/entities",
+                  "@/features",
+                  "@/widgets",
+                  "@/pages",
+                  "@/app",
+                  "**/entities/**",
+                  "**/features/**",
+                  "**/widgets/**",
+                  "**/pages/**",
+                  "**/app/**"
+                ],
+                "message": "FSD: 'shared' smije importati samo iz ni\u017eih slojeva (ni\u010dega)."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "src/entities/**"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@/features/*",
+                  "@/widgets/*",
+                  "@/pages/*",
+                  "@/app/*",
+                  "@/features",
+                  "@/widgets",
+                  "@/pages",
+                  "@/app",
+                  "**/features/**",
+                  "**/widgets/**",
+                  "**/pages/**",
+                  "**/app/**"
+                ],
+                "message": "FSD: 'entities' smije importati samo iz ni\u017eih slojeva (shared)."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "src/features/**"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@/widgets/*",
+                  "@/pages/*",
+                  "@/app/*",
+                  "@/widgets",
+                  "@/pages",
+                  "@/app",
+                  "**/widgets/**",
+                  "**/pages/**",
+                  "**/app/**"
+                ],
+                "message": "FSD: 'features' smije importati samo iz ni\u017eih slojeva (shared, entities)."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "src/widgets/**"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@/pages/*",
+                  "@/app/*",
+                  "@/pages",
+                  "@/app",
+                  "**/pages/**",
+                  "**/app/**"
+                ],
+                "message": "FSD: 'widgets' smije importati samo iz ni\u017eih slojeva (shared, entities, features)."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "src/pages/**"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@/app/*",
+                  "@/app",
+                  "**/app/**"
+                ],
+                "message": "FSD: 'pages' smije importati samo iz ni\u017eih slojeva (shared, entities, features, widgets)."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "src/shared/ui/**",
+        "src/app/routes/**"
+      ],
+      "rules": {
+        "react/only-export-components": "off"
+      }
+    }
+  ]
+}
