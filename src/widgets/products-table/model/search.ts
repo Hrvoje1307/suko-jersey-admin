@@ -5,6 +5,7 @@ import {
   PRODUCT_TYPES,
   type Product,
 } from '@/entities/product'
+import { normalizeSearchText } from '@/shared/lib'
 
 export const PAGE_SIZE = 20
 
@@ -39,13 +40,8 @@ export function hasActiveFilters({ q, category, status, type }: ProductsSearch):
   return Boolean(q || category || status || type)
 }
 
-// "sibenik" nađe "Šibenik"; đ se ne rastavlja pa ostaje kakav jest.
-function normalize(text: string): string {
-  return text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLocaleLowerCase('hr')
-}
-
 export function filterProducts(products: Product[], search: ProductsSearch): Product[] {
-  const needle = search.q ? normalize(search.q) : null
+  const needle = search.q ? normalizeSearchText(search.q) : null
 
   return products.filter(
     (product) =>
@@ -53,7 +49,7 @@ export function filterProducts(products: Product[], search: ProductsSearch): Pro
       (!search.status || product.status === search.status) &&
       (!search.type || product.type === search.type) &&
       (!needle ||
-        normalize(product.name).includes(needle) ||
-        normalize(product.club_or_team).includes(needle)),
+        normalizeSearchText(product.name).includes(needle) ||
+        normalizeSearchText(product.club_or_team).includes(needle)),
   )
 }

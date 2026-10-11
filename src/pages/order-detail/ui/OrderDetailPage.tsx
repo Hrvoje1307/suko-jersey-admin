@@ -1,7 +1,13 @@
+import { OrderDetail, OrderNotFound } from '@/widgets/order-detail'
+
 type OrderDetailPageProps = {
   orderId: string
 }
 
 export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
-  return <h1 className="text-2xl font-semibold">Narudžba #{orderId}</h1>
+  const id = Number(orderId)
+  if (!Number.isInteger(id) || id <= 0) {
+    return <OrderNotFound />
+  }
+  return <OrderDetail orderId={id} />
 }
