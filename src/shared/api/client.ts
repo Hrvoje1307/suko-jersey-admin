@@ -15,8 +15,9 @@ export function setUnauthorizedHandler(handler: () => void) {
   onUnauthorized = handler
 }
 
-// Kriva lozinka na loginu vraća 401, ali to nije isteknuta sesija.
-const AUTH_ENDPOINTS = ['/admin/login']
+// 401 ovdje nije isteknuta sesija: na loginu je kriva lozinka, a na odjavi
+// je token već mrtav — odjava ionako sama čisti store i ide na /login.
+const AUTH_ENDPOINTS = ['/admin/login', '/admin/logout']
 
 apiClient.interceptors.request.use((config) => {
   const token = getToken()

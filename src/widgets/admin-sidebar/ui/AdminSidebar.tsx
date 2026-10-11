@@ -40,9 +40,14 @@ export function AdminSidebar() {
             <p className="truncate text-xs text-muted-foreground">{admin.email}</p>
           </div>
         )}
-        <Button variant="outline" className="w-full" onClick={() => void logout()}>
+        <Button
+          variant="outline"
+          className="w-full"
+          disabled={logout.isPending}
+          onClick={() => logout.mutate()}
+        >
           <LogOutIcon />
-          Odjava
+          {logout.isPending ? 'Odjava…' : 'Odjava'}
         </Button>
       </div>
     </aside>

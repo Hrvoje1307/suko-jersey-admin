@@ -1,4 +1,4 @@
-export { getMe, meQueryOptions, postLogin } from './api/admin-user-api'
+export { getMe, meQueryOptions, postLogin, postLogout } from './api/admin-user-api'
 export {
   adminUserSchema,
   loginRequestSchema,
