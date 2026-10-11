@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { ArrowLeftIcon, Loader2Icon, RotateCwIcon } from 'lucide-react'
+import { ArrowLeftIcon, Loader2Icon, PackageIcon, RotateCwIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import {
   OrderStatusBadge,
@@ -91,7 +91,10 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
             <CardHeader>
               <CardTitle>Status narudžbe</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="grid gap-4">
+              {order.supplier_shipment_id !== null && (
+                <ShipmentNotice shipmentId={order.supplier_shipment_id} />
+              )}
               {/* key: forma drži svoje stanje i ne prati kasnije promjene propa. */}
               <UpdateOrderStatusForm key={order.id} order={order} />
             </CardContent>
@@ -100,6 +103,27 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
         </div>
       </div>
     </DetailLayout>
+  )
+}
+
+// Do dolaska u HR narudžba putuje s pošiljkom — tamo se status mijenja za
+// sve kupce odjednom; ovdje samo kad ova narudžba ide svojim putem.
+function ShipmentNotice({ shipmentId }: { shipmentId: number }) {
+  return (
+    <p className="flex gap-2 rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">
+      <PackageIcon className="mt-0.5 size-4 shrink-0" />
+      <span>
+        Putuje u{' '}
+        <Link
+          to="/posiljke/$id"
+          params={{ id: String(shipmentId) }}
+          className="font-medium text-foreground hover:underline"
+        >
+          pošiljci #{shipmentId}
+        </Link>
+        . Do dolaska u HR status mijenjaj na pošiljci, za sve narudžbe odjednom.
+      </span>
+    </p>
   )
 }
 

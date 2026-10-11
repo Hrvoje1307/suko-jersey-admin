@@ -13,6 +13,7 @@ const dateTimeFormat = new Intl.DateTimeFormat('hr-HR', {
   minute: '2-digit',
 })
 const regionNames = new Intl.DisplayNames(['hr'], { type: 'region' })
+const pluralRules = new Intl.PluralRules('hr')
 
 export function formatCurrency(value: number): string {
   return currencyFormat.format(value)
@@ -38,4 +39,12 @@ export function formatCountry(code: string): string {
 // "sibenik" nađe "Šibenik"; đ se ne rastavlja pa ostaje kakav jest.
 export function normalizeSearchText(text: string): string {
   return text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLocaleLowerCase('hr')
+}
+
+type PluralForms = { one: string; few: string; other: string }
+
+// formatCount(5, { one: 'narudžba', few: 'narudžbe', other: 'narudžbi' }) → "5 narudžbi"
+export function formatCount(count: number, forms: PluralForms): string {
+  const rule = pluralRules.select(count)
+  return `${count} ${rule === 'one' ? forms.one : rule === 'few' ? forms.few : forms.other}`
 }

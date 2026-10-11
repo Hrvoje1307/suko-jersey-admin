@@ -57,7 +57,3 @@ export function countHiddenUnpaid(orders: Order[], search: OrdersSearch): number
   if (search.payment !== undefined) return 0
   return filterOrders(orders, { ...search, payment: 'unpaid' }).length
 }
-
-export function countPieces(order: Order): number {
-  return order.items.reduce((sum, item) => sum + item.quantity, 0)
-}

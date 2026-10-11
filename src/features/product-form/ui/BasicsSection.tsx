@@ -11,6 +11,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  FormField,
   Input,
   Select,
   SelectContent,
@@ -20,7 +21,6 @@ import {
   Textarea,
 } from '@/shared/ui'
 import type { ProductFormApi } from '../model/useProductForm'
-import { FormField } from './FormField'
 
 export function BasicsSection({ form }: { form: ProductFormApi }) {
   return (

@@ -1,8 +1,7 @@
 import { createColumnHelper } from '@tanstack/react-table'
 import { Link } from '@tanstack/react-router'
-import { OrderStatusBadge, PaymentStatusBadge, type Order } from '@/entities/order'
+import { countPieces, OrderStatusBadge, PaymentStatusBadge, type Order } from '@/entities/order'
 import { formatCurrency, formatDateTime } from '@/shared/lib'
-import { countPieces } from '../model/search'
 import { orderTableFeatures } from '../model/table-features'
 
 const columnHelper = createColumnHelper<typeof orderTableFeatures, Order>()
@@ -45,6 +44,23 @@ export const orderColumns = columnHelper.columns([
     cell: ({ getValue }) => (
       <span className="font-medium tabular-nums">{formatCurrency(getValue())}</span>
     ),
+  }),
+  columnHelper.accessor('supplier_shipment_id', {
+    header: 'Pošiljka',
+    cell: ({ getValue }) => {
+      const shipmentId = getValue()
+      return shipmentId === null ? (
+        <span className="text-muted-foreground">—</span>
+      ) : (
+        <Link
+          to="/posiljke/$id"
+          params={{ id: String(shipmentId) }}
+          className="tabular-nums hover:underline"
+        >
+          #{shipmentId}
+        </Link>
+      )
+    },
   }),
   columnHelper.accessor('status', {
     header: 'Status',

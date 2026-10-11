@@ -14,6 +14,9 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedNarudzbeIndexRouteImport } from './routes/_authenticated/narudzbe/index'
 import { Route as AuthenticatedNarudzbeIdRouteImport } from './routes/_authenticated/narudzbe/$id'
+import { Route as AuthenticatedPosiljkeIndexRouteImport } from './routes/_authenticated/posiljke/index'
+import { Route as AuthenticatedPosiljkeIdRouteImport } from './routes/_authenticated/posiljke/$id'
+import { Route as AuthenticatedPosiljkeNovaRouteImport } from './routes/_authenticated/posiljke/nova'
 import { Route as AuthenticatedProizvodiIndexRouteImport } from './routes/_authenticated/proizvodi/index'
 import { Route as AuthenticatedProizvodiNoviRouteImport } from './routes/_authenticated/proizvodi/novi'
 import { Route as AuthenticatedProizvodiIdUrediRouteImport } from './routes/_authenticated/proizvodi/$id.uredi'
@@ -43,6 +46,23 @@ const AuthenticatedNarudzbeIdRoute = AuthenticatedNarudzbeIdRouteImport.update({
   path: '/narudzbe/$id',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedPosiljkeIndexRoute =
+  AuthenticatedPosiljkeIndexRouteImport.update({
+    id: '/posiljke/',
+    path: '/posiljke/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedPosiljkeIdRoute = AuthenticatedPosiljkeIdRouteImport.update({
+  id: '/posiljke/$id',
+  path: '/posiljke/$id',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedPosiljkeNovaRoute =
+  AuthenticatedPosiljkeNovaRouteImport.update({
+    id: '/posiljke/nova',
+    path: '/posiljke/nova',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedProizvodiIndexRoute =
   AuthenticatedProizvodiIndexRouteImport.update({
     id: '/proizvodi/',
@@ -66,8 +86,11 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
   '/narudzbe/$id': typeof AuthenticatedNarudzbeIdRoute
+  '/posiljke/$id': typeof AuthenticatedPosiljkeIdRoute
+  '/posiljke/nova': typeof AuthenticatedPosiljkeNovaRoute
   '/proizvodi/novi': typeof AuthenticatedProizvodiNoviRoute
   '/narudzbe/': typeof AuthenticatedNarudzbeIndexRoute
+  '/posiljke/': typeof AuthenticatedPosiljkeIndexRoute
   '/proizvodi/': typeof AuthenticatedProizvodiIndexRoute
   '/proizvodi/$id/uredi': typeof AuthenticatedProizvodiIdUrediRoute
 }
@@ -75,8 +98,11 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/': typeof AuthenticatedIndexRoute
   '/narudzbe/$id': typeof AuthenticatedNarudzbeIdRoute
+  '/posiljke/$id': typeof AuthenticatedPosiljkeIdRoute
+  '/posiljke/nova': typeof AuthenticatedPosiljkeNovaRoute
   '/proizvodi/novi': typeof AuthenticatedProizvodiNoviRoute
   '/narudzbe': typeof AuthenticatedNarudzbeIndexRoute
+  '/posiljke': typeof AuthenticatedPosiljkeIndexRoute
   '/proizvodi': typeof AuthenticatedProizvodiIndexRoute
   '/proizvodi/$id/uredi': typeof AuthenticatedProizvodiIdUrediRoute
 }
@@ -86,8 +112,11 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/narudzbe/$id': typeof AuthenticatedNarudzbeIdRoute
+  '/_authenticated/posiljke/$id': typeof AuthenticatedPosiljkeIdRoute
+  '/_authenticated/posiljke/nova': typeof AuthenticatedPosiljkeNovaRoute
   '/_authenticated/proizvodi/novi': typeof AuthenticatedProizvodiNoviRoute
   '/_authenticated/narudzbe/': typeof AuthenticatedNarudzbeIndexRoute
+  '/_authenticated/posiljke/': typeof AuthenticatedPosiljkeIndexRoute
   '/_authenticated/proizvodi/': typeof AuthenticatedProizvodiIndexRoute
   '/_authenticated/proizvodi/$id/uredi': typeof AuthenticatedProizvodiIdUrediRoute
 }
@@ -97,8 +126,11 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/narudzbe/$id'
+    | '/posiljke/$id'
+    | '/posiljke/nova'
     | '/proizvodi/novi'
     | '/narudzbe/'
+    | '/posiljke/'
     | '/proizvodi/'
     | '/proizvodi/$id/uredi'
   fileRoutesByTo: FileRoutesByTo
@@ -106,8 +138,11 @@ export interface FileRouteTypes {
     | '/login'
     | '/'
     | '/narudzbe/$id'
+    | '/posiljke/$id'
+    | '/posiljke/nova'
     | '/proizvodi/novi'
     | '/narudzbe'
+    | '/posiljke'
     | '/proizvodi'
     | '/proizvodi/$id/uredi'
   id:
@@ -116,8 +151,11 @@ export interface FileRouteTypes {
     | '/login'
     | '/_authenticated/'
     | '/_authenticated/narudzbe/$id'
+    | '/_authenticated/posiljke/$id'
+    | '/_authenticated/posiljke/nova'
     | '/_authenticated/proizvodi/novi'
     | '/_authenticated/narudzbe/'
+    | '/_authenticated/posiljke/'
     | '/_authenticated/proizvodi/'
     | '/_authenticated/proizvodi/$id/uredi'
   fileRoutesById: FileRoutesById
@@ -164,6 +202,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNarudzbeIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/posiljke/': {
+      id: '/_authenticated/posiljke/'
+      path: '/posiljke'
+      fullPath: '/posiljke/'
+      preLoaderRoute: typeof AuthenticatedPosiljkeIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/posiljke/$id': {
+      id: '/_authenticated/posiljke/$id'
+      path: '/posiljke/$id'
+      fullPath: '/posiljke/$id'
+      preLoaderRoute: typeof AuthenticatedPosiljkeIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/posiljke/nova': {
+      id: '/_authenticated/posiljke/nova'
+      path: '/posiljke/nova'
+      fullPath: '/posiljke/nova'
+      preLoaderRoute: typeof AuthenticatedPosiljkeNovaRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/proizvodi/': {
       id: '/_authenticated/proizvodi/'
       path: '/proizvodi'
@@ -191,8 +250,11 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedNarudzbeIdRoute: typeof AuthenticatedNarudzbeIdRoute
+  AuthenticatedPosiljkeIdRoute: typeof AuthenticatedPosiljkeIdRoute
+  AuthenticatedPosiljkeNovaRoute: typeof AuthenticatedPosiljkeNovaRoute
   AuthenticatedProizvodiNoviRoute: typeof AuthenticatedProizvodiNoviRoute
   AuthenticatedNarudzbeIndexRoute: typeof AuthenticatedNarudzbeIndexRoute
+  AuthenticatedPosiljkeIndexRoute: typeof AuthenticatedPosiljkeIndexRoute
   AuthenticatedProizvodiIndexRoute: typeof AuthenticatedProizvodiIndexRoute
   AuthenticatedProizvodiIdUrediRoute: typeof AuthenticatedProizvodiIdUrediRoute
 }
@@ -200,8 +262,11 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedNarudzbeIdRoute: AuthenticatedNarudzbeIdRoute,
+  AuthenticatedPosiljkeIdRoute: AuthenticatedPosiljkeIdRoute,
+  AuthenticatedPosiljkeNovaRoute: AuthenticatedPosiljkeNovaRoute,
   AuthenticatedProizvodiNoviRoute: AuthenticatedProizvodiNoviRoute,
   AuthenticatedNarudzbeIndexRoute: AuthenticatedNarudzbeIndexRoute,
+  AuthenticatedPosiljkeIndexRoute: AuthenticatedPosiljkeIndexRoute,
   AuthenticatedProizvodiIndexRoute: AuthenticatedProizvodiIndexRoute,
   AuthenticatedProizvodiIdUrediRoute: AuthenticatedProizvodiIdUrediRoute,
 }

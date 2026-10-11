@@ -9,11 +9,11 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  FormField,
   Input,
   Label,
 } from '@/shared/ui'
 import type { ProductFormApi } from '../model/useProductForm'
-import { FormField } from './FormField'
 
 // API ne prima datoteke — slike su vanjski URL-ovi (npr. CDN) i šalju se
 // s proizvodom, pa se mogu dodati već pri kreiranju.

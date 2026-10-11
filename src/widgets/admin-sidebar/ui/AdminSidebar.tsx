@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { LayoutDashboardIcon, LogOutIcon, ReceiptTextIcon, ShirtIcon } from 'lucide-react'
+import { LayoutDashboardIcon, LogOutIcon, PackageIcon, ReceiptTextIcon, ShirtIcon } from 'lucide-react'
 import { useLogout } from '@/features/logout'
 import { useAuth } from '@/shared/lib/auth'
 import { Button } from '@/shared/ui'
@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboardIcon, exact: true },
   { to: '/proizvodi', label: 'Proizvodi', icon: ShirtIcon, exact: false },
   { to: '/narudzbe', label: 'Narudžbe', icon: ReceiptTextIcon, exact: false },
+  { to: '/posiljke', label: 'Pošiljke', icon: PackageIcon, exact: false },
 ] as const
 
 export function AdminSidebar() {

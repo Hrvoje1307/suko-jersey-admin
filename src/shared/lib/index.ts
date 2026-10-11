@@ -1,6 +1,7 @@
 export { cn } from './utils'
 export { downloadTextFile, parseCsv, readTextFile } from './csv'
 export {
+  formatCount,
   formatCountry,
   formatCurrency,
   formatDate,

@@ -4,6 +4,11 @@ import { z } from 'zod'
 export const ORDER_STATUSES = ['ordered', 'sent_to_supplier', 'arrived_hr', 'shipped', 'delivered'] as const
 export type OrderStatus = (typeof ORDER_STATUSES)[number]
 
+// Koraci idu redom kao ORDER_STATUSES (OrderStatus::precedes() na backendu).
+export function orderStatusPrecedes(status: OrderStatus, other: OrderStatus): boolean {
+  return ORDER_STATUSES.indexOf(status) < ORDER_STATUSES.indexOf(other)
+}
+
 export const PAYMENT_STATUSES = ['paid', 'unpaid', 'failed', 'refunded'] as const
 export type PaymentStatus = (typeof PAYMENT_STATUSES)[number]
 
@@ -61,9 +66,15 @@ export const orderSchema = z.object({
   payment_status: z.enum(PAYMENT_STATUSES),
   total_price: z.number(),
   items: z.array(orderItemSchema),
+  // Pošiljka od dobavljača u kojoj narudžba putuje do Hrvatske.
+  supplier_shipment_id: z.number().nullable(),
   created_at: z.string(),
 })
 export type Order = z.infer<typeof orderSchema>
+
+export function countPieces(order: Order): number {
+  return order.items.reduce((sum, item) => sum + item.quantity, 0)
+}
 
 export const orderDetailSchema = orderSchema.extend({
   customer: orderSchema.shape.customer.extend({

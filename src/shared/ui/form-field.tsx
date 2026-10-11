@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { cn } from '@/shared/lib'
-import { Label } from '@/shared/ui'
+import { Label } from './label'
 
 type ControlProps = {
   id: string

@@ -9,6 +9,7 @@ import {
   type OrderDetail,
   type OrderStatusFormValues,
 } from '@/entities/order'
+import { supplierShipmentKeys } from '@/entities/supplier-shipment'
 import { getStatusErrorMessage } from './status-error'
 
 function orderToFormValues(order: OrderDetail): OrderStatusFormValues {
@@ -41,6 +42,8 @@ export function useOrderStatusForm(order: OrderDetail) {
       setDefaultValues(values)
       form.reset(values)
       void queryClient.invalidateQueries({ queryKey: orderKeys.all })
+      // Pošiljka čita koliko je odmakla iz statusa svojih narudžbi.
+      void queryClient.invalidateQueries({ queryKey: supplierShipmentKeys.all })
     },
     onError: (error) => toast.error(getStatusErrorMessage(error)),
   })
