@@ -46,6 +46,7 @@ export const productColumns = columnHelper.columns([
   columnHelper.accessor('season', {
     header: 'Sezona',
     enableSorting: false,
+    cell: ({ getValue }) => getValue() ?? <span className="text-muted-foreground">—</span>,
   }),
   columnHelper.accessor('price', {
     header: ({ column }) => <SortableHeader column={column} label="Cijena" />,

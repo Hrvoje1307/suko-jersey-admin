@@ -36,7 +36,8 @@ export const productSchema = z.object({
   club_or_team: z.string(),
   category: z.enum(PRODUCT_CATEGORIES),
   type: z.enum(PRODUCT_TYPES),
-  season: z.string(),
+  // Nullable u bazi i requestu — proizvod može biti bez sezone.
+  season: z.string().nullable(),
   price: z.number(),
   primary_image_url: z.string().nullable(),
   status: z.enum(PRODUCT_STATUSES),
