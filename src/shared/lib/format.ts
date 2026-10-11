@@ -14,9 +14,15 @@ const dateTimeFormat = new Intl.DateTimeFormat('hr-HR', {
 })
 const regionNames = new Intl.DisplayNames(['hr'], { type: 'region' })
 const pluralRules = new Intl.PluralRules('hr')
+const percentFormat = new Intl.NumberFormat('hr-HR', { style: 'percent', maximumFractionDigits: 0 })
 
 export function formatCurrency(value: number): string {
   return currencyFormat.format(value)
+}
+
+// 0.42 → "42 %"
+export function formatPercent(ratio: number): string {
+  return percentFormat.format(ratio)
 }
 
 export function formatDate(iso: string): string {

@@ -6,6 +6,7 @@ export {
   formatCurrency,
   formatDate,
   formatDateTime,
+  formatPercent,
   normalizeSearchText,
 } from './format'
 export * from './auth'
