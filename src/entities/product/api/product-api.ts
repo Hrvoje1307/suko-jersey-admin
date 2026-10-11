@@ -45,13 +45,6 @@ export async function deleteProduct(id: number): Promise<void> {
   await apiClient.delete(`/admin/products/${id}`)
 }
 
-// Roster s vanjskog API-ja prema spremljenim kategoriji, klubu i sezoni.
-// 422/502 nose poruku zašto dohvat nije uspio.
-export async function fetchPlayers(productId: number): Promise<ProductPlayer[]> {
-  const { data } = await apiClient.post(`/admin/products/${productId}/fetch-players`)
-  return productPlayerSchema.array().parse(data)
-}
-
 export type SavePlayersVariables = { productId: number; players: ProductPlayerInput[] }
 
 export async function savePlayers({ productId, players }: SavePlayersVariables): Promise<ProductPlayer[]> {
@@ -98,10 +91,6 @@ export function useUpdateProduct(
 // unmountanoj komponenti ne pozivaju.
 export function useDeleteProduct(options: MutationHookOptions<void, number> = {}) {
   return useMutation({ ...options, mutationFn: deleteProduct })
-}
-
-export function useFetchPlayers(options: MutationHookOptions<ProductPlayer[], number> = {}) {
-  return useMutation({ ...options, mutationFn: fetchPlayers })
 }
 
 export function useSavePlayers(

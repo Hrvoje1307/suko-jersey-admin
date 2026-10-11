@@ -56,7 +56,6 @@ export function BasicsSection({ form }: { form: ProductFormApi }) {
               id="product-club"
               label="Klub / tim"
               error={field.state.meta.errors[0]?.message}
-              hint="Dohvat igrača radi samo za klubove mapirane na API-ju, pod identičnim nazivom."
             >
               {(props) => (
                 <Input

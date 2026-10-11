@@ -5,16 +5,23 @@ import { toast } from 'sonner'
 import {
   productKeys,
   productPlayersFormSchema,
-  useFetchPlayers,
   useSavePlayers,
   type ProductDetail,
-  type ProductPlayer,
 } from '@/entities/product'
+import { readTextFile } from '@/shared/lib'
 import { playersToFormValues } from './form-values'
 import { getSavePlayersErrorMessage } from './players-error'
+import { parsePlayersCsv } from './players-csv'
+
+const CSV_MAX_BYTES = 1_000_000
+
+export type CsvImportState =
+  | { status: 'imported'; fileName: string; count: number; skipped: string[] }
+  | { status: 'error'; fileName: string; error: string }
 
 export function useProductPlayersForm(product: ProductDetail) {
   const queryClient = useQueryClient()
+  const [csvImport, setCsvImport] = useState<CsvImportState | null>(null)
 
   // U stateu iz istog razloga kao u formi proizvoda: useForm bi inače nakon
   // reset() vratio stare defaultValues.
@@ -22,27 +29,17 @@ export function useProductPlayersForm(product: ProductDetail) {
     playersToFormValues(product.available_players),
   )
 
-  // Oba endpointa vraćaju konačnu listu (s `source`), pa ona postaje nova
-  // polazna točka forme.
-  const applyServerPlayers = (players: ProductPlayer[]) => {
-    const values = playersToFormValues(players)
-    setDefaultValues(values)
-    form.reset(values)
-    // Detalj nosi available_players; forma ga ne čita ponovno, ali povratak na
-    // stranicu ne smije pokazati staro stanje.
-    void queryClient.invalidateQueries({ queryKey: productKeys.adminDetail(product.id) })
-  }
-
-  const fetchPlayers = useFetchPlayers({
-    onSuccess: (players) => {
-      applyServerPlayers(players)
-      toast.success(`Roster je dohvaćen (igrača: ${players.length}).`)
-    },
-  })
-
   const savePlayers = useSavePlayers({
     onSuccess: (players) => {
-      applyServerPlayers(players)
+      // API vraća konačnu listu (s id-jevima novih), pa ona postaje nova
+      // polazna točka forme.
+      const values = playersToFormValues(players)
+      setDefaultValues(values)
+      form.reset(values)
+      setCsvImport(null)
+      // Detalj nosi available_players; forma ga ne čita ponovno, ali povratak
+      // na stranicu ne smije pokazati staro stanje.
+      void queryClient.invalidateQueries({ queryKey: productKeys.adminDetail(product.id) })
       toast.success('Igrači su spremljeni.')
     },
     onError: (error) => toast.error(getSavePlayersErrorMessage(error)),
@@ -54,10 +51,42 @@ export function useProductPlayersForm(product: ProductDetail) {
     validators: { onDynamic: productPlayersFormSchema },
     onSubmit: ({ value }) => {
       const { players } = productPlayersFormSchema.parse(value)
-      fetchPlayers.reset()
       savePlayers.mutate({ productId: product.id, players })
     },
   })
 
-  return { form, fetchPlayers, savePlayers }
+  // CSV zamjenjuje cijelu listu u formi, ali ništa ne sprema — admin pregleda
+  // pa spremi ili odbaci.
+  const importCsv = async (file: File) => {
+    if (file.size > CSV_MAX_BYTES) {
+      setCsvImport({ status: 'error', fileName: file.name, error: 'Datoteka je veća od 1 MB.' })
+      return
+    }
+    let text: string
+    try {
+      text = await readTextFile(file)
+    } catch {
+      setCsvImport({ status: 'error', fileName: file.name, error: 'Datoteku nije moguće pročitati.' })
+      return
+    }
+    const result = parsePlayersCsv(text)
+    if (!result.ok) {
+      setCsvImport({ status: 'error', fileName: file.name, error: result.error })
+      return
+    }
+    form.setFieldValue('players', result.players)
+    setCsvImport({
+      status: 'imported',
+      fileName: file.name,
+      count: result.players.length,
+      skipped: result.skipped,
+    })
+  }
+
+  const discard = () => {
+    form.reset()
+    setCsvImport(null)
+  }
+
+  return { form, savePlayers, csvImport, importCsv, discard }
 }

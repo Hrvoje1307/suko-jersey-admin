@@ -46,32 +46,21 @@ export const productSchema = z.object({
 })
 export type Product = z.infer<typeof productSchema>
 
-// `external_api` idući dohvat rostera briše i zamjenjuje; `manual` (dodao ili
-// uredio admin) ostaje.
-export const PLAYER_SOURCES = ['external_api', 'manual'] as const
-export type PlayerSource = (typeof PLAYER_SOURCES)[number]
-
-export const PLAYER_SOURCE_LABELS: Record<PlayerSource, string> = {
-  external_api: 'API',
-  manual: 'Ručno',
-}
-
-// Admin oblik igrača — vraćaju ga samo PUT /players i POST /fetch-players.
+// Igrač iz ponude za tisak — isti oblik u detalju proizvoda i u odgovoru
+// PUT /players (koji uz to vraća i `source`, ovdje nepotreban).
 export const productPlayerSchema = z.object({
   id: z.number(),
   player_name: z.string(),
   player_number: z.string().nullable(),
-  source: z.enum(PLAYER_SOURCES),
 })
 export type ProductPlayer = z.infer<typeof productPlayerSchema>
 
 // GET /admin/products/{id}, a isti oblik vraćaju i POST i PUT.
-// available_players je javni oblik igrača, bez `source`.
 export const productDetailSchema = productSchema.extend({
   description: z.string().nullable(),
   model_3d_url: z.string().nullable(),
   images: z.array(z.string()),
-  available_players: z.array(productPlayerSchema.omit({ source: true })),
+  available_players: z.array(productPlayerSchema),
 })
 export type ProductDetail = z.infer<typeof productDetailSchema>
 
@@ -128,29 +117,33 @@ export const productFormSchema = z.object({
 export type ProductFormValues = z.input<typeof productFormSchema>
 export type ProductPayload = z.output<typeof productFormSchema>
 
+// Red liste igrača — u formi i u CSV uvozu, da obje provjere budu iste.
+export const productPlayerRowSchema = z
+  .object({
+    id: z.number().nullable(),
+    player_name: z
+      .string()
+      .trim()
+      .min(1, 'Unesi ime igrača.')
+      .max(255, 'Ime može imati najviše 255 znakova.'),
+    player_number: z
+      .string()
+      .trim()
+      .max(10, 'Broj može imati najviše 10 znakova.')
+      .transform(emptyToNull),
+  })
+  // undefined id JSON izostavi — tako API zna da je igrač novi.
+  .transform(({ id, player_name, player_number }) => ({
+    id: id ?? undefined,
+    player_name,
+    player_number,
+  }))
+export type ProductPlayerRow = z.input<typeof productPlayerRowSchema>
+export type ProductPlayerInput = z.output<typeof productPlayerRowSchema>
+
 // PUT /admin/products/{id}/players je full replace: igrač s `id` se ažurira,
 // bez `id` dodaje, a izostavljeni se brišu.
 export const productPlayersFormSchema = z.object({
-  players: z.array(
-    z
-      .object({
-        id: z.number().nullable(),
-        player_name: z
-          .string()
-          .trim()
-          .min(1, 'Unesi ime igrača.')
-          .max(255, 'Ime može imati najviše 255 znakova.'),
-        player_number: z.string().trim().max(10, 'Najviše 10 znakova.').transform(emptyToNull),
-        // Samo za prikaz; null dok ga API ne vrati (detalj proizvoda ga nema).
-        source: z.enum(PLAYER_SOURCES).nullable(),
-      })
-      // undefined id JSON izostavi — tako API zna da je igrač novi.
-      .transform(({ id, player_name, player_number }) => ({
-        id: id ?? undefined,
-        player_name,
-        player_number,
-      })),
-  ),
+  players: z.array(productPlayerRowSchema),
 })
 export type ProductPlayersFormValues = z.input<typeof productPlayersFormSchema>
-export type ProductPlayerInput = z.output<typeof productPlayersFormSchema>['players'][number]

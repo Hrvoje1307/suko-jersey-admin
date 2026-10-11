@@ -1,7 +1,8 @@
-import { DownloadIcon, Loader2Icon, PlusIcon, XIcon } from 'lucide-react'
-import { CATEGORY_LABELS, PLAYER_SOURCE_LABELS, type ProductDetail } from '@/entities/product'
+import { DownloadIcon, Loader2Icon, PlusIcon, UploadIcon, XIcon } from 'lucide-react'
+import { useRef } from 'react'
+import type { ProductDetail } from '@/entities/product'
+import { downloadTextFile } from '@/shared/lib'
 import {
-  Badge,
   Button,
   Card,
   CardAction,
@@ -11,17 +12,16 @@ import {
   CardTitle,
   Input,
 } from '@/shared/ui'
-import { getFetchPlayersErrorMessage } from '../model/players-error'
-import { useProductPlayersForm } from '../model/useProductPlayersForm'
+import { PLAYERS_CSV_TEMPLATE } from '../model/players-csv'
+import { useProductPlayersForm, type CsvImportState } from '../model/useProductPlayersForm'
 
 type ProductPlayersSectionProps = {
-  /** Spremljeni proizvod — dohvat rostera čita kategoriju, klub i sezonu iz baze. */
   product: ProductDetail
 }
 
 export function ProductPlayersSection({ product }: ProductPlayersSectionProps) {
-  const { form, fetchPlayers, savePlayers } = useProductPlayersForm(product)
-  const isBusy = fetchPlayers.isPending || savePlayers.isPending
+  const { form, savePlayers, csvImport, importCsv, discard } = useProductPlayersForm(product)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   return (
     <Card>
@@ -31,21 +31,27 @@ export function ProductPlayersSection({ product }: ProductPlayersSectionProps) {
           Ponuda imena i brojeva za tisak na dresu. Kupac uvijek može upisati i vlastiti tekst.
         </CardDescription>
         <CardAction>
-          <form.Subscribe selector={(state) => state.isDirty}>
-            {(isDirty) => (
-              <Button
-                type="button"
-                variant="outline"
-                // Dohvat zamjenjuje listu, pa bi nespremljene izmjene nestale.
-                disabled={isDirty || isBusy}
-                title={isDirty ? 'Spremi ili odbaci izmjene igrača prije dohvata.' : undefined}
-                onClick={() => fetchPlayers.mutate(product.id)}
-              >
-                {fetchPlayers.isPending ? <Loader2Icon className="animate-spin" /> : <DownloadIcon />}
-                Dohvati roster
-              </Button>
-            )}
-          </form.Subscribe>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv,text/csv"
+            className="hidden"
+            onChange={(event) => {
+              const file = event.target.files?.[0]
+              // Reset, da ponovni odabir iste datoteke opet okine onChange.
+              event.target.value = ''
+              if (file) void importCsv(file)
+            }}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            disabled={savePlayers.isPending}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <UploadIcon />
+            Uvezi CSV
+          </Button>
         </CardAction>
       </CardHeader>
 
@@ -58,17 +64,24 @@ export function ProductPlayersSection({ product }: ProductPlayersSectionProps) {
             void form.handleSubmit()
           }}
         >
-          <p className="text-sm text-muted-foreground">
-            Dohvat koristi spremljene podatke: {CATEGORY_LABELS[product.category]} ·{' '}
-            {product.club_or_team} · {product.season ?? 'bez sezone'}. Zamjenjuje prethodno
-            dohvaćene igrače, a ručno dodani i uređeni ostaju.
-          </p>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+            <span>
+              CSV sa stupcima <code>ime</code> i <code>broj</code> (broj nije obavezan). Uvoz
+              zamjenjuje listu ispod — pregledaj je pa spremi.
+            </span>
+            <Button
+              type="button"
+              variant="link"
+              size="sm"
+              className="h-auto p-0"
+              onClick={() => downloadTextFile('igraci-predlozak.csv', PLAYERS_CSV_TEMPLATE)}
+            >
+              <DownloadIcon />
+              Preuzmi predložak
+            </Button>
+          </div>
 
-          {fetchPlayers.isError && (
-            <p role="alert" className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-              {getFetchPlayersErrorMessage(fetchPlayers.error)}
-            </p>
-          )}
+          {csvImport && <CsvImportNotice state={csvImport} />}
 
           <form.Field name="players" mode="array">
             {(field) => (
@@ -77,13 +90,13 @@ export function ProductPlayersSection({ product }: ProductPlayersSectionProps) {
                   <ul className="grid gap-2">
                     <li
                       aria-hidden
-                      className="grid grid-cols-[5rem_1fr_4rem_2rem] gap-2 text-sm font-medium text-muted-foreground"
+                      className="grid grid-cols-[5rem_1fr_2rem] gap-2 text-sm font-medium text-muted-foreground"
                     >
                       <span>Broj</span>
                       <span>Ime</span>
                     </li>
                     {field.state.value.map((player, index) => (
-                      <li key={index} className="grid grid-cols-[5rem_1fr_4rem_2rem] items-start gap-2">
+                      <li key={index} className="grid grid-cols-[5rem_1fr_2rem] items-start gap-2">
                         <form.Field name={`players[${index}].player_number`}>
                           {(numberField) => (
                             <div className="grid gap-1">
@@ -109,8 +122,8 @@ export function ProductPlayersSection({ product }: ProductPlayersSectionProps) {
                             <div className="grid gap-1">
                               <Input
                                 aria-label={`Ime igrača ${index + 1}`}
-                                // Novi red dobiva fokus čim se doda.
-                                autoFocus={player.id === null}
+                                // Ručno dodan red dobiva fokus čim se pojavi.
+                                autoFocus={player.id === null && player.player_name === ''}
                                 value={nameField.state.value}
                                 onChange={(event) => nameField.handleChange(event.target.value)}
                                 onBlur={nameField.handleBlur}
@@ -124,17 +137,6 @@ export function ProductPlayersSection({ product }: ProductPlayersSectionProps) {
                             </div>
                           )}
                         </form.Field>
-                        <div className="flex h-9 items-center">
-                          {player.id === null ? (
-                            <Badge variant="outline">Novi</Badge>
-                          ) : (
-                            player.source && (
-                              <Badge variant={player.source === 'manual' ? 'outline' : 'secondary'}>
-                                {PLAYER_SOURCE_LABELS[player.source]}
-                              </Badge>
-                            )
-                          )}
-                        </div>
                         <Button
                           type="button"
                           variant="ghost"
@@ -150,7 +152,7 @@ export function ProductPlayersSection({ product }: ProductPlayersSectionProps) {
                   </ul>
                 ) : (
                   <p className="rounded-md border border-dashed px-4 py-6 text-center text-sm text-muted-foreground">
-                    Još nema igrača. Dohvati roster ili dodaj igrače ručno.
+                    Još nema igrača. Uvezi CSV ili ih dodaj ručno.
                   </p>
                 )}
                 <div>
@@ -158,9 +160,7 @@ export function ProductPlayersSection({ product }: ProductPlayersSectionProps) {
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() =>
-                      field.pushValue({ id: null, player_name: '', player_number: '', source: null })
-                    }
+                    onClick={() => field.pushValue({ id: null, player_name: '', player_number: '' })}
                   >
                     <PlusIcon />
                     Dodaj igrača
@@ -178,11 +178,11 @@ export function ProductPlayersSection({ product }: ProductPlayersSectionProps) {
                     type="button"
                     variant="outline"
                     disabled={savePlayers.isPending}
-                    onClick={() => form.reset()}
+                    onClick={discard}
                   >
                     Odbaci izmjene
                   </Button>
-                  <Button type="submit" disabled={isBusy}>
+                  <Button type="submit" disabled={savePlayers.isPending}>
                     {savePlayers.isPending && <Loader2Icon className="animate-spin" />}
                     Spremi igrače
                   </Button>
@@ -193,5 +193,37 @@ export function ProductPlayersSection({ product }: ProductPlayersSectionProps) {
         </form>
       </CardContent>
     </Card>
+  )
+}
+
+const SKIPPED_SHOWN = 5
+
+function CsvImportNotice({ state }: { state: CsvImportState }) {
+  if (state.status === 'error') {
+    return (
+      <p role="alert" className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+        {state.fileName}: {state.error}
+      </p>
+    )
+  }
+
+  const hidden = state.skipped.length - SKIPPED_SHOWN
+  return (
+    <div role="status" className="grid gap-1 rounded-md bg-muted px-3 py-2 text-sm">
+      <p>
+        Iz datoteke {state.fileName} učitano je igrača: {state.count}. Pregledaj listu pa spremi.
+      </p>
+      {state.skipped.length > 0 && (
+        <div className="text-muted-foreground">
+          <p>Preskočeni redovi:</p>
+          <ul className="list-disc pl-5">
+            {state.skipped.slice(0, SKIPPED_SHOWN).map((message) => (
+              <li key={message}>{message}</li>
+            ))}
+          </ul>
+          {hidden > 0 && <p>…i još {hidden}.</p>}
+        </div>
+      )}
+    </div>
   )
 }
