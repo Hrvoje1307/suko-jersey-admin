@@ -1,2 +1,2 @@
 export { env } from './env'
-export { MONTHLY_REVENUE_GOAL } from './goals'
+export { ESTIMATED_PROFIT_MARGIN, MONTHLY_PROFIT_GOAL } from './goals'

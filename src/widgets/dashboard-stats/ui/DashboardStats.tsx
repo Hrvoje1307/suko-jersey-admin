@@ -1,7 +1,7 @@
 import { CalendarIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useDashboard } from '@/entities/dashboard'
-import { MONTHLY_REVENUE_GOAL } from '@/shared/config'
+import { ESTIMATED_PROFIT_MARGIN, MONTHLY_PROFIT_GOAL } from '@/shared/config'
 import { formatCurrency, formatPercent } from '@/shared/lib'
 import {
   Card,
@@ -40,14 +40,17 @@ export function DashboardStats() {
         <div>
           <p className="font-medium">Još nema narudžbi ovaj mjesec</p>
           <p className="text-sm text-muted-foreground">
-            Cilj prihoda za mjesec: {formatCurrency(MONTHLY_REVENUE_GOAL)}
+            Cilj zarade za mjesec: {formatCurrency(MONTHLY_PROFIT_GOAL)}
           </p>
         </div>
       </div>
     )
   }
 
-  const goalRatio = data.revenue_this_month / MONTHLY_REVENUE_GOAL
+  // API zna samo prihod — zarada je procjena po fiksnoj marži.
+  const estimatedProfit = data.revenue_this_month * ESTIMATED_PROFIT_MARGIN
+  const goalRatio = estimatedProfit / MONTHLY_PROFIT_GOAL
+  const revenueToGoal = Math.max(0, MONTHLY_PROFIT_GOAL - estimatedProfit) / ESTIMATED_PROFIT_MARGIN
 
   return (
     <div className="grid gap-4 md:grid-cols-3">
@@ -62,15 +65,23 @@ export function DashboardStats() {
         hint="Samo plaćene narudžbe."
       />
       <StatCard
-        title="Prihod prema cilju"
+        title="Zarada prema cilju"
         value={formatPercent(goalRatio)}
-        hint="Prihod, ne profit — trošak dobavljača nije oduzet."
+        hint={`Procjena: ${formatPercent(ESTIMATED_PROFIT_MARGIN)} prihoda ostaje nakon svih troškova.`}
       >
         {/* Postotak smije prijeći 100 %, traka ne. */}
-        <Progress value={Math.min(goalRatio, 1) * 100} aria-label="Prihod prema mjesečnom cilju" />
-        <p className="text-sm text-muted-foreground tabular-nums">
-          {formatCurrency(data.revenue_this_month)} od {formatCurrency(MONTHLY_REVENUE_GOAL)}
+        <Progress
+          value={Math.min(goalRatio, 1) * 100}
+          aria-label="Procijenjena zarada prema mjesečnom cilju"
+        />
+        <p className="text-sm tabular-nums">
+          ≈ {formatCurrency(estimatedProfit)} od {formatCurrency(MONTHLY_PROFIT_GOAL)}
         </p>
+        {revenueToGoal > 0 && (
+          <p className="text-sm text-muted-foreground tabular-nums">
+            Do cilja još ≈ {formatCurrency(revenueToGoal)} prihoda.
+          </p>
+        )}
       </StatCard>
     </div>
   )
